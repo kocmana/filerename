@@ -128,7 +128,6 @@ class CliControllerTest {
     var actualResult = UNDER_TEST.mapArguments();
 
     //then
-    System.out.println(actualResult);
     assertThat(actualResult.path().endsWith("baz")).isTrue();
   }
 
