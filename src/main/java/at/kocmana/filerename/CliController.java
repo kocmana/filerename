@@ -1,8 +1,10 @@
 package at.kocmana.filerename;
 
-import at.kocmana.filerename.model.Arguments;
+import at.kocmana.filerename.model.CommandLineArguments;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import at.kocmana.filerename.service.FileRenameTask;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
 
@@ -39,8 +41,8 @@ public class CliController implements Runnable {
     }
   }
 
-  Arguments mapArguments() {
-    return new Arguments(path, recursive, inputTemplate, outputTemplate, dryRun);
+  CommandLineArguments mapArguments() {
+    return new CommandLineArguments(path, recursive, inputTemplate, outputTemplate, dryRun);
   }
 
   public void run(String[] args) {

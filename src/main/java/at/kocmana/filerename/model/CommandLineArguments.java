@@ -2,7 +2,7 @@ package at.kocmana.filerename.model;
 
 import java.nio.file.Path;
 
-public record Arguments(
+public record CommandLineArguments(
     Path path,
     boolean recursive,
     String inputTemplate,
