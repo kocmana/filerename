@@ -23,8 +23,8 @@ public class FileRenameJob implements Callable<FileRenameJob.JobStatus> {
 
   @Override
   public JobStatus call() throws Exception {
-    var date = extractDate(jobArguments.inputFile().toString(), jobArguments.outputTemplate()), arguments.outputFileName, dtfIn, dtfOut)
-    outputFileName = transformFilename(arguments.inputFile().getFileName().toString(), date);
+//    var date = extractDate(jobArguments.inputFile().toString(), jobArguments.outputTemplate()), arguments.outputFileName, dtfIn, dtfOut)
+//    outputFileName = transformFilename(arguments.inputFile().getFileName().toString(), date);
     //              .map(path -> path.getFileName() + "->" +
 //                      transformFilename(path.getFileName().toString(), extractDate(path.getFileName().toString(), filePattern),
 //                              arguments.outputTemplate(), dtfIn, dtfOut))
