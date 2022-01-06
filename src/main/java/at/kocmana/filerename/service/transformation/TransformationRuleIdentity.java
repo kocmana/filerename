@@ -1,46 +1,41 @@
 package at.kocmana.filerename.service.transformation;
 
-import static java.util.Objects.isNull;
-
 import java.util.function.BiPredicate;
 
 public record TransformationRuleIdentity(
-    int offsetFrom,
-    int offsetTo
+        int offsetFrom,
+        int offsetTo
 ) {
   private static final BiPredicate<TransformationRuleIdentity, TransformationRuleIdentity>
-      thisIdentityHasOverlapStartingBeforeOther =
-      (thisElement, otherElement) -> thisElement.offsetFrom < otherElement.offsetFrom &&
-          thisElement.offsetTo > otherElement.offsetFrom;
+          THIS_HAS_OVERLAP_STARTING_BEFORE_OTHER =
+          (thisElement, otherElement) -> thisElement.offsetFrom < otherElement.offsetFrom &&
+                  thisElement.offsetTo > otherElement.offsetFrom;
   private static final BiPredicate<TransformationRuleIdentity, TransformationRuleIdentity>
-      otherIdentityHasOverlapStartingBeforeThis =
-      (thisElement, otherElement) -> otherElement.offsetFrom < thisElement.offsetFrom &&
-          otherElement.offsetTo > thisElement.offsetFrom;
+          OTHER_HAS_OVERLAP_STARTING_BEFORE_THIS =
+          (thisElement, otherElement) -> otherElement.offsetFrom < thisElement.offsetFrom &&
+                  otherElement.offsetTo > thisElement.offsetFrom;
   private static final BiPredicate<TransformationRuleIdentity, TransformationRuleIdentity>
-      identitiesHavePerfectOverlap =
-      (thisElement, otherElement) -> thisElement.offsetFrom == otherElement.offsetFrom &&
-          thisElement.offsetTo == otherElement.offsetTo;
+          IDENTITIES_HAVE_PERFECT_OVERLAP =
+          (thisElement, otherElement) -> thisElement.offsetFrom == otherElement.offsetFrom &&
+                  thisElement.offsetTo == otherElement.offsetTo;
 
-  public TransformationRuleIdentity(int offsetFrom, int offsetTo) {
+  public TransformationRuleIdentity {
     if (offsetFrom < 0 || offsetTo < 0) {
       throw new IllegalArgumentException("Offset values must not be < 0");
     }
     if (offsetFrom == offsetTo) {
       throw new IllegalArgumentException("Start and end offset must not be equal");
     }
-
-    this.offsetFrom = offsetFrom;
-    this.offsetTo = offsetTo;
   }
 
   boolean overlapsWith(TransformationRuleIdentity other) {
 
-    if (isNull(other)) {
+    if (other == null) {
       return false;
     }
-    return thisIdentityHasOverlapStartingBeforeOther
-        .or(otherIdentityHasOverlapStartingBeforeThis)
-        .or(identitiesHavePerfectOverlap)
-        .test(this, other);
+    return THIS_HAS_OVERLAP_STARTING_BEFORE_OTHER
+            .or(OTHER_HAS_OVERLAP_STARTING_BEFORE_THIS)
+            .or(IDENTITIES_HAVE_PERFECT_OVERLAP)
+            .test(this, other);
   }
 }

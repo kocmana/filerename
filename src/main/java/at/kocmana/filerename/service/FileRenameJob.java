@@ -1,14 +1,19 @@
 package at.kocmana.filerename.service;
 
 import at.kocmana.filerename.model.JobArguments;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Callable;
-import java.util.regex.Pattern;
 
 public class FileRenameJob implements Callable<FileRenameJob.JobStatus> {
 
-  private JobArguments jobArguments;
+  private static final Logger log = LoggerFactory.getLogger(FileRenameJob.class);
+
+  private final JobArguments jobArguments;
   private volatile JobStatus jobStatus = JobStatus.CREATED;
 
   private String outputFileName;
@@ -22,25 +27,30 @@ public class FileRenameJob implements Callable<FileRenameJob.JobStatus> {
   }
 
   @Override
-  public JobStatus call() throws Exception {
-//    var date = extractDate(jobArguments.inputFile().toString(), jobArguments.outputTemplate()), arguments.outputFileName, dtfIn, dtfOut)
-//    outputFileName = transformFilename(arguments.inputFile().getFileName().toString(), date);
-    //              .map(path -> path.getFileName() + "->" +
-//                      transformFilename(path.getFileName().toString(), extractDate(path.getFileName().toString(), filePattern),
-//                              arguments.outputTemplate(), dtfIn, dtfOut))
-//              //.map(path -> extractDate(path.getFileName().toString(), filePattern))
+  public JobStatus call() {
+    var filename = jobArguments.inputFile().getFileName().toString();
+    outputFileName = jobArguments.outputTemplate();
+    for (var transformationRule : jobArguments.transformationRules()) {
+      outputFileName = transformationRule.apply(filename, outputFileName);
+    }
+
+    log.info("{} -> {}", filename, outputFileName);
+
+    if (!jobArguments.dryRun()) {
+      try {
+        Files.move(jobArguments.inputFile(), jobArguments.inputFile().resolveSibling(outputFileName));
+      } catch (IOException exception) {
+        log.error("Could not rename filename from {} to {}: {}",
+                filename, outputFileName, exception.getMessage());
+      }
+    }
     return jobStatus;
   }
 
-  private static String extractDate(String fileName, Pattern filePattern) {
-    System.out.println("Assessing " + fileName);
-
-    var match = filePattern.matcher(fileName);
-    if (!match.find()) {
-      System.out.println("Not found");
-      return "NOT Treated";
-    }
-    return match.group("date");
+  @Override
+  public String toString() {
+    return "jobArguments: " + jobArguments.toString() + "\r\n"
+            + "job Status" + jobStatus;
   }
 
   private static String transformFilename(String filename, String dateTime, String outputPattern,

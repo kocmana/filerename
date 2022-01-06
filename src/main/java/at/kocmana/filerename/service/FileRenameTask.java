@@ -2,6 +2,8 @@ package at.kocmana.filerename.service;
 
 import at.kocmana.filerename.model.CommandLineArguments;
 import at.kocmana.filerename.model.JobArguments;
+import at.kocmana.filerename.service.transformation.TransformationRule;
+import at.kocmana.filerename.service.transformation.TransformationRuleFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,27 +14,20 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.function.BiPredicate;
-import java.util.function.Predicate;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class FileRenameTask implements Callable<Boolean> {
 
   private static final Logger log = LoggerFactory.getLogger(FileRenameTask.class);
-
-  private static final String FILENAME_REGEX_STRING =
-          "(?<leading>.*?)(<<(?<date>.*)>>)(?<trailing>.*?).(?<fileSuffix>.+)\\b";
-  private static final Pattern FILENAME_PATTERN = Pattern.compile(FILENAME_REGEX_STRING);
-
-  private CommandLineArguments arguments;
+  private final CommandLineArguments arguments;
 
   private TaskStatus taskStatus = TaskStatus.CREATED;
   private List<FileRenameJob> fileRenameJobs = Collections.emptyList();
-
-  private DateTimeFormatter dtfIn;
-  private DateTimeFormatter dtfOut;
+  private List<TransformationRule> transformationRules = Collections.emptyList();
 
   public FileRenameTask(CommandLineArguments arguments) {
     this.arguments = arguments;
@@ -43,51 +38,41 @@ public class FileRenameTask implements Callable<Boolean> {
   }
 
   @Override
-  public Boolean call() throws Exception {
+  public Boolean call() {
+    transformationRules = TransformationRuleFactory.generateApplicableTransformationRules(arguments.inputTemplate(), arguments.outputTemplate());
+    var searchString = generateFileSearchPattern();
+    generateRenameJobs(searchString);
 
-    extractDateFormatFromTemplates();
-    generateRenameJobs();
+    this.taskStatus = TaskStatus.RUNNING;
 
+    log.info(fileRenameJobs.stream()
+            .map(Objects::toString)
+            .collect(Collectors.joining(",")));
 
-//
-//      relevantFiles
-//              .map(path -> path.getFileName() + "->" +
-//                      transformFilename(path.getFileName().toString(), extractDate(path.getFileName().toString(), filePattern),
-//                              arguments.outputTemplate(), dtfIn, dtfOut))
-//              //.map(path -> extractDate(path.getFileName().toString(), filePattern))
-//              .forEach(System.out::println);
-//    }
-//    System.out.println(arguments.path().normalize().
-//            toAbsolutePath());
+    fileRenameJobs.parallelStream()
+            .forEach(FileRenameJob::call);
+
+    this.taskStatus = TaskStatus.SUCCESS;
 
     return true;
   }
 
-  private void extractDateFormatFromTemplates() {
-
-    Matcher inputMatcher = FILENAME_PATTERN.matcher(arguments.inputTemplate());
-    Matcher outputMatcher = FILENAME_PATTERN.matcher(arguments.outputTemplate());
-
-    if (!inputMatcher.find()) {
-      failTask("Input Pattern did not comply to required pattern: {}", FILENAME_REGEX_STRING);
-    }
-    log.debug("Input Date: {}", inputMatcher.group("date"));
-    if (!outputMatcher.find()) {
-      failTask("Output Pattern did not comply to required pattern: {}", FILENAME_REGEX_STRING);
-    }
-    log.debug("Output Date: {}", outputMatcher.group("date"));
-
-    if (inputMatcher.group("date").isBlank()) {
-      failTask("Could not identify date to parse.");
-    }
-    dtfIn = DateTimeFormatter.ofPattern(inputMatcher.group("date"));
-    dtfOut = DateTimeFormatter.ofPattern(outputMatcher.group("date"));
+  public String getStatus() {
+    return fileRenameJobs.stream()
+            .map(Objects::toString)
+            .collect(Collectors.joining("\r\n"));
   }
 
-  private void generateRenameJobs() {
-    var filePatternString = arguments.inputTemplate().replaceAll("<<.*>>", "(?<date>.*?)");
+  private String generateFileSearchPattern() {
+    var searchString = arguments.inputTemplate();
+    for (var transformationRule : transformationRules) {
+      searchString = transformationRule.replaceTemplateWithSearchString(searchString);
+    }
+    return searchString;
+  }
 
-    var filePattern = Pattern.compile(filePatternString);
+  private void generateRenameJobs(String searchString) {
+    var filePattern = Pattern.compile(searchString);
     var searchPattern = filePattern.asPredicate();
 
     BiPredicate<Path, BasicFileAttributes> searchCriteria = (path, attributes) -> {
@@ -97,12 +82,13 @@ public class FileRenameTask implements Callable<Boolean> {
 
     try (var relevantFiles = Files.find(arguments.path(), Integer.MAX_VALUE, searchCriteria)) {
       fileRenameJobs = relevantFiles
-              .map(file -> new JobArguments(file, dtfIn, dtfOut, arguments.outputTemplate()))
+              .map(file -> new JobArguments(file, transformationRules, arguments.outputTemplate(), arguments.dryRun()))
               .map(FileRenameJob::new)
               .toList();
+      log.info("Relevant files: {}", relevantFiles);
     } catch (IOException exception) {
       failTask("Could not lookup files in directory {}: {}",
-             arguments.path().toAbsolutePath().toString(),
+              arguments.path().toAbsolutePath().toString(),
               exception.getMessage());
     }
   }
@@ -131,7 +117,7 @@ public class FileRenameTask implements Callable<Boolean> {
   }
 
   private enum TaskStatus {
-    CREATED, READY, RUNNING, SUCCESS, FAILURE
+    CREATED, RUNNING, SUCCESS, FAILURE
   }
 
 }

@@ -8,8 +8,12 @@ public interface TransformationRule {
     return this.getIdentity().equals(other.getIdentity());
   }
 
-  void prepare();
+  default boolean overlapsWith(TransformationRule other) {
+    return this.getIdentity().overlapsWith(other.getIdentity());
+  }
 
-  String apply(String filename);
+  String replaceTemplateWithSearchString(String inputPattern);
+
+  String apply(String filename, String outputPattern);
 
 }
