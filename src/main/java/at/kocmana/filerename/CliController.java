@@ -31,7 +31,7 @@ public class CliController implements Runnable {
           description = "The pattern of the output file names")
   private String outputTemplate;
 
-  @Option(names = {"-d", "--dry"},
+  @Option(names = {"-d", "--dryRun"},
           description = "Setting this parameter will only display how the file names will be changed", defaultValue = "false")
   private boolean dryRun = false;
 

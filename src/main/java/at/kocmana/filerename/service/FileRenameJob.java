@@ -42,7 +42,7 @@ public class FileRenameJob implements Callable<FileRenameJob.JobStatus> {
 
     if (!jobArguments.dryRun()) {
       try {
-        //Files.move(jobArguments.inputFile(), jobArguments.inputFile().resolveSibling(outputFileName));
+        Files.move(jobArguments.inputFile(), jobArguments.inputFile().resolveSibling(outputFileName));
         jobStatus = JobStatus.SUCCESS;
       } catch (Exception exception) {
         log.error("Could not rename filename from {} to {}: {}",

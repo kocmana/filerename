@@ -45,11 +45,6 @@ public class FileRenameTask implements Callable<Boolean> {
 
     this.taskStatus = TaskStatus.RUNNING;
 
-    log.info(fileRenameJobs.stream()
-            .map(Objects::toString)
-            .collect(Collectors.joining(",")));
-
-
     fileRenameJobs.parallelStream()
             .forEach(FileRenameJob::call);
 
@@ -81,17 +76,18 @@ public class FileRenameTask implements Callable<Boolean> {
       return attributes.isRegularFile() && searchPattern.test(filename);
     };
 
-    try (var relevantFiles = Files.find(arguments.path(), Integer.MAX_VALUE, searchCriteria)) {
-      fileRenameJobs = relevantFiles
+    var searchDepth = arguments.recursive() ? Integer.MAX_VALUE : 1;
+    try (var relevantFiles = Files.find(arguments.path(), searchDepth, searchCriteria)) {
+      var files = relevantFiles.toList();
+      log.info("Files matching provided input pattern:\r\n\t{}",
+              files.stream()
+                      .map(Path::toString)
+                      .collect(Collectors.joining("\r\n\t")));
+
+      fileRenameJobs = files.stream()
               .map(file -> new JobArguments(file, transformationRules, arguments.outputTemplate(), arguments.dryRun()))
               .map(FileRenameJob::new)
               .toList();
-      log.info("Relevant files:\r\n {}",
-              fileRenameJobs.stream()
-                      .map(FileRenameJob::getJobArguments)
-                      .map(JobArguments::inputFile)
-                      .map(Path::toString)
-                      .collect(Collectors.joining("\r\n")));
     } catch (IOException exception) {
       failTask("Could not lookup files in directory {}: {}",
               arguments.path().toAbsolutePath().toString(),
