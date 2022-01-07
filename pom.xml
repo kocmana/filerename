@@ -18,13 +18,13 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
 
     <!-- Dependency Versions -->
-    <logback.version>1.2.9</logback.version>
     <picocli.version>4.6.2</picocli.version>
+    <logback.version>1.2.9</logback.version>
 
     <!-- Testing Dependency Versions -->
     <junit-jupiter.version>5.8.2</junit-jupiter.version>
     <assertj.version>3.21.0</assertj.version>
-    <slf4j.version>1.7.32</slf4j.version>
+    <archunit.version>0.22.0</archunit.version>
   </properties>
 
   <dependencies>
@@ -35,17 +35,16 @@
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-core</artifactId>
+      <version>${logback.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <version>${logback.version}</version>
     </dependency>
-<!--    <dependency>-->
-<!--      <groupId>org.slf4j</groupId>-->
-<!--      <artifactId>slf4j-api</artifactId>-->
-<!--      <version>${slf4j.version}</version>-->
-<!--    </dependency>-->
 
-
-    <!-- Test -->
+    <!-- Testing -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
@@ -56,6 +55,12 @@
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
       <version>${assertj.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.tngtech.archunit</groupId>
+      <artifactId>archunit</artifactId>
+      <version>${archunit.version}</version>
       <scope>test</scope>
     </dependency>
 
