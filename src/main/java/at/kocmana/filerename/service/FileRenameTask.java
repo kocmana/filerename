@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -23,6 +22,7 @@ import java.util.stream.Collectors;
 public class FileRenameTask implements Callable<Boolean> {
 
   private static final Logger log = LoggerFactory.getLogger(FileRenameTask.class);
+
   private final CommandLineArguments arguments;
 
   private TaskStatus taskStatus = TaskStatus.CREATED;
@@ -48,6 +48,7 @@ public class FileRenameTask implements Callable<Boolean> {
     log.info(fileRenameJobs.stream()
             .map(Objects::toString)
             .collect(Collectors.joining(",")));
+
 
     fileRenameJobs.parallelStream()
             .forEach(FileRenameJob::call);
@@ -85,30 +86,17 @@ public class FileRenameTask implements Callable<Boolean> {
               .map(file -> new JobArguments(file, transformationRules, arguments.outputTemplate(), arguments.dryRun()))
               .map(FileRenameJob::new)
               .toList();
-      log.info("Relevant files: {}", relevantFiles);
+      log.info("Relevant files:\r\n {}",
+              fileRenameJobs.stream()
+                      .map(FileRenameJob::getJobArguments)
+                      .map(JobArguments::inputFile)
+                      .map(Path::toString)
+                      .collect(Collectors.joining("\r\n")));
     } catch (IOException exception) {
       failTask("Could not lookup files in directory {}: {}",
               arguments.path().toAbsolutePath().toString(),
               exception.getMessage());
     }
-  }
-
-  private static String extractDate(String fileName, Pattern filePattern) {
-    System.out.println("Assessing " + fileName);
-
-    var match = filePattern.matcher(fileName);
-    if (!match.find()) {
-      System.out.println("Not found");
-      return "NOT Treated";
-    }
-    return match.group("date");
-  }
-
-  private static String transformFilename(String filename, String dateTime, String outputPattern,
-                                          DateTimeFormatter dtfIn, DateTimeFormatter dtfOut) {
-    var dateTimeParsed = dtfIn.parse(dateTime);
-
-    return outputPattern.replaceAll("<<.*?>>", dtfOut.format(dateTimeParsed));
   }
 
   private void failTask(String errorMessage, Object... errorMessageArguments) {

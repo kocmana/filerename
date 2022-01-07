@@ -12,7 +12,6 @@ import java.util.concurrent.Callable;
 public class FileRenameJob implements Callable<FileRenameJob.JobStatus> {
 
   private static final Logger log = LoggerFactory.getLogger(FileRenameJob.class);
-
   private final JobArguments jobArguments;
   private volatile JobStatus jobStatus = JobStatus.CREATED;
 
@@ -26,8 +25,13 @@ public class FileRenameJob implements Callable<FileRenameJob.JobStatus> {
     return jobStatus;
   }
 
+  public JobArguments getJobArguments() {
+    return jobArguments;
+  }
+
   @Override
   public JobStatus call() {
+    jobStatus = JobStatus.RUNNING;
     var filename = jobArguments.inputFile().getFileName().toString();
     outputFileName = jobArguments.outputTemplate();
     for (var transformationRule : jobArguments.transformationRules()) {
@@ -38,10 +42,12 @@ public class FileRenameJob implements Callable<FileRenameJob.JobStatus> {
 
     if (!jobArguments.dryRun()) {
       try {
-        Files.move(jobArguments.inputFile(), jobArguments.inputFile().resolveSibling(outputFileName));
-      } catch (IOException exception) {
+        //Files.move(jobArguments.inputFile(), jobArguments.inputFile().resolveSibling(outputFileName));
+        jobStatus = JobStatus.SUCCESS;
+      } catch (Exception exception) {
         log.error("Could not rename filename from {} to {}: {}",
                 filename, outputFileName, exception.getMessage());
+        jobStatus = JobStatus.FAILED;
       }
     }
     return jobStatus;
@@ -61,7 +67,7 @@ public class FileRenameJob implements Callable<FileRenameJob.JobStatus> {
   }
 
   public enum JobStatus {
-    CREATED, READY, RUNNING, SUCCESS, FAILED
+    CREATED, RUNNING, SUCCESS, FAILED
   }
 
 }
