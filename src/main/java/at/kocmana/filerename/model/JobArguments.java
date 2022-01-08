@@ -1,6 +1,6 @@
 package at.kocmana.filerename.model;
 
-import at.kocmana.filerename.service.transformation.TransformationRule;
+import at.kocmana.filerename.service.transformation.rules.TransformationRule;
 
 import java.nio.file.Path;
 import java.util.List;

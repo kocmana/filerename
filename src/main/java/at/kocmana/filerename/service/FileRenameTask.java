@@ -2,8 +2,8 @@ package at.kocmana.filerename.service;
 
 import at.kocmana.filerename.model.CommandLineArguments;
 import at.kocmana.filerename.model.JobArguments;
-import at.kocmana.filerename.service.transformation.TransformationRule;
 import at.kocmana.filerename.service.transformation.TransformationRuleFactory;
+import at.kocmana.filerename.service.transformation.rules.TransformationRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +19,7 @@ import java.util.function.BiPredicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class FileRenameTask implements Callable<Boolean> {
+public class FileRenameTask implements Callable<FileRenameTask.TaskStatus> {
 
   private static final Logger log = LoggerFactory.getLogger(FileRenameTask.class);
 
@@ -38,19 +38,22 @@ public class FileRenameTask implements Callable<Boolean> {
   }
 
   @Override
-  public Boolean call() {
+  public TaskStatus call() {
     transformationRules = TransformationRuleFactory.generateApplicableTransformationRules(arguments.inputTemplate(), arguments.outputTemplate());
     var searchString = generateFileSearchPattern();
     generateRenameJobs(searchString);
 
     this.taskStatus = TaskStatus.RUNNING;
 
-    fileRenameJobs.parallelStream()
-            .forEach(FileRenameJob::call);
+    try {
+      fileRenameJobs.parallelStream()
+              .forEach(FileRenameJob::call);
+      this.taskStatus = TaskStatus.SUCCESS;
+    } catch (Exception exception) {
+      log.error("Could not finish task with arguments: {}: {}", arguments, exception.getMessage());
+    }
 
-    this.taskStatus = TaskStatus.SUCCESS;
-
-    return true;
+    return taskStatus;
   }
 
   public String getStatus() {
@@ -79,10 +82,7 @@ public class FileRenameTask implements Callable<Boolean> {
     var searchDepth = arguments.recursive() ? Integer.MAX_VALUE : 1;
     try (var relevantFiles = Files.find(arguments.path(), searchDepth, searchCriteria)) {
       var files = relevantFiles.toList();
-      log.info("Files matching provided input pattern:\r\n\t{}",
-              files.stream()
-                      .map(Path::toString)
-                      .collect(Collectors.joining("\r\n\t")));
+      log.info("Files matching provided input pattern:\r\n\t{}", matchingFilesToString(files));
 
       fileRenameJobs = files.stream()
               .map(file -> new JobArguments(file, transformationRules, arguments.outputTemplate(), arguments.dryRun()))
@@ -95,12 +95,18 @@ public class FileRenameTask implements Callable<Boolean> {
     }
   }
 
+  private String matchingFilesToString(List<Path> files) {
+    return files.stream()
+            .map(Path::toString)
+            .collect(Collectors.joining("\r\n\t"));
+  }
+
   private void failTask(String errorMessage, Object... errorMessageArguments) {
     log.error(errorMessage, errorMessageArguments);
     taskStatus = TaskStatus.FAILURE;
   }
 
-  private enum TaskStatus {
+  public enum TaskStatus {
     CREATED, RUNNING, SUCCESS, FAILURE
   }
 

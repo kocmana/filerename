@@ -1,8 +1,9 @@
-package at.kocmana.filerename.service.transformation;
+package at.kocmana.filerename.service.transformation.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
+import at.kocmana.filerename.service.transformation.rules.TransformationRuleIdentity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

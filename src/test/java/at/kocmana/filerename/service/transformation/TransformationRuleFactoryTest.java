@@ -1,5 +1,6 @@
 package at.kocmana.filerename.service.transformation;
 
+import at.kocmana.filerename.service.transformation.rules.TimestampTransformationRule;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;

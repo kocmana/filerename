@@ -4,9 +4,7 @@ import at.kocmana.filerename.model.JobArguments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.nio.file.Files;
-import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Callable;
 
 public class FileRenameJob implements Callable<FileRenameJob.JobStatus> {
@@ -22,7 +20,7 @@ public class FileRenameJob implements Callable<FileRenameJob.JobStatus> {
   }
 
   public JobStatus getJobStatus() {
-    return jobStatus;
+    return  jobStatus;
   }
 
   public JobArguments getJobArguments() {
@@ -31,15 +29,16 @@ public class FileRenameJob implements Callable<FileRenameJob.JobStatus> {
 
   @Override
   public JobStatus call() {
-    jobStatus = JobStatus.RUNNING;
     var filename = jobArguments.inputFile().getFileName().toString();
     outputFileName = jobArguments.outputTemplate();
     for (var transformationRule : jobArguments.transformationRules()) {
       outputFileName = transformationRule.apply(filename, outputFileName);
     }
 
-    log.info("{} -> {}", filename, outputFileName);
+    jobStatus = JobStatus.READY;
+    log.info(this.toString());
 
+    jobStatus = JobStatus.RUNNING;
     if (!jobArguments.dryRun()) {
       try {
         Files.move(jobArguments.inputFile(), jobArguments.inputFile().resolveSibling(outputFileName));
@@ -49,25 +48,24 @@ public class FileRenameJob implements Callable<FileRenameJob.JobStatus> {
                 filename, outputFileName, exception.getMessage());
         jobStatus = JobStatus.FAILED;
       }
+    } else {
+      jobStatus = JobStatus.SUCCESS;
     }
     return jobStatus;
   }
 
   @Override
   public String toString() {
-    return "jobArguments: " + jobArguments.toString() + "\r\n"
-            + "job Status" + jobStatus;
-  }
+    var inputFilenameRepresentation = jobArguments.inputFile().getFileName().toString();
+    var outputFilenameRepresentation = outputFileName != null ? outputFileName : "currently undefined";
 
-  private static String transformFilename(String filename, String dateTime, String outputPattern,
-                                          DateTimeFormatter dtfIn, DateTimeFormatter dtfOut) {
-    var dateTimeParsed = dtfIn.parse(dateTime);
-
-    return outputPattern.replaceAll("<<.*?>>", dtfOut.format(dateTimeParsed));
+    return String.format("%s -> %s: %s",
+            inputFilenameRepresentation, outputFilenameRepresentation,
+            jobStatus);
   }
 
   public enum JobStatus {
-    CREATED, RUNNING, SUCCESS, FAILED
+    CREATED, READY, RUNNING, SUCCESS, FAILED
   }
 
 }

@@ -1,9 +1,10 @@
-package at.kocmana.filerename.service.transformation;
+package at.kocmana.filerename.service.transformation.rules;
+
+import at.kocmana.filerename.service.transformation.TransformationRuleGenerator;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,8 +38,7 @@ public class TimestampTransformationRule implements TransformationRule {
             dtfIn.format(now), dtfOut.format(now));
   }
 
-  public static final BiFunction<String, String, Optional<TransformationRule>> FACTORY_METHOD =
-          TimestampTransformationRule::generateIfRuleIsApplicable;
+  public static final TransformationRuleGenerator FACTORY_METHOD = TimestampTransformationRule::generateIfRuleIsApplicable;
 
   private static Optional<TransformationRule> generateIfRuleIsApplicable(String inputPattern,
                                                                          String outputPattern) {
@@ -97,9 +97,7 @@ public class TimestampTransformationRule implements TransformationRule {
     }
     var inputDate = dtfIn.parse(inputMatcher.group("date"));
     var outputDate = dtfOut.format(inputDate);
-    var outputFilename = outputPattern.replaceAll("<<.*?>>", outputDate);
-
-    return outputFilename;
+    return outputPattern.replaceAll(TIMESTAMP_TRANSFORMATION_RULE_MARKER, outputDate);
   }
 
 

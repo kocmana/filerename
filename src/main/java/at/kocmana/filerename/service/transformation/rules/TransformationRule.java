@@ -1,4 +1,4 @@
-package at.kocmana.filerename.service.transformation;
+package at.kocmana.filerename.service.transformation.rules;
 
 public interface TransformationRule {
 

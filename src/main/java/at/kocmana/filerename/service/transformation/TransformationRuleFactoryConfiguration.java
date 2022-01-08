@@ -1,15 +1,15 @@
 package at.kocmana.filerename.service.transformation;
 
+import at.kocmana.filerename.service.transformation.rules.TimestampTransformationRule;
+
 import java.util.List;
-import java.util.Optional;
-import java.util.function.BiFunction;
 
 class TransformationRuleFactoryConfiguration {
 
   private TransformationRuleFactoryConfiguration() {
   }
 
-  public static final List<BiFunction<String, String, Optional<TransformationRule>>> FACTORY_METHODS =
+  public static final List<TransformationRuleGenerator> FACTORY_METHODS =
           List.of(
                   TimestampTransformationRule.FACTORY_METHOD
           );
