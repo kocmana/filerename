@@ -91,7 +91,7 @@ class CliControllerTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"-d", "--dry"})
+  @ValueSource(strings = {"-d", "--dryRun"})
   void testCorrectDryRunArgumentValue(String parameterName) {
     //given
     String[] args = {"-i", "foo", "-o", "bar", parameterName};
