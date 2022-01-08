@@ -1,13 +1,15 @@
-package at.kocmana.filerename;
+package at.kocmana.filerename.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-import java.nio.file.Path;
+import at.kocmana.filerename.controller.CliController;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import picocli.CommandLine;
+
+import java.nio.file.Path;
 
 class CliControllerTest {
 
@@ -128,7 +130,7 @@ class CliControllerTest {
     var actualResult = UNDER_TEST.mapArguments();
 
     //then
-    assertThat(actualResult.path().endsWith("baz")).isTrue();
+    assertThat(actualResult.path()).endsWithRaw(Path.of("baz"));
   }
 
 }

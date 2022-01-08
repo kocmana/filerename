@@ -1,22 +1,24 @@
-package at.kocmana.filerename;
+package at.kocmana.filerename.controller;
 
 import at.kocmana.filerename.model.CommandLineArguments;
 import at.kocmana.filerename.service.FileRenameTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
+import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.CompletableFuture;
 
-
+@Command(mixinStandardHelpOptions = true, versionProvider = VersionInformationController.class)
 public class CliController implements Runnable {
 
   private static final Logger log = LoggerFactory.getLogger(CliController.class);
 
   @Option(names = {"-p", "--path"},
-          description = "The directory for the operation.")
+          description = "The directory for the operation")
   private Path path = Paths.get(".");
 
   @Option(names = {"-r", "--recursive"},
@@ -24,7 +26,7 @@ public class CliController implements Runnable {
   private boolean recursive = false;
 
   @Option(names = {"-i", "--input"}, required = true,
-          description = "The pattern of the input file names.")
+          description = "The pattern of the input file names")
   private String inputTemplate;
 
   @Option(names = {"-o", "--output"}, required = true,
@@ -39,9 +41,10 @@ public class CliController implements Runnable {
   public void run() {
     var arguments = mapArguments();
     try {
-      var taskSuccessful = new FileRenameTask(arguments).call();
-    } catch (Exception e) {
-      log.error("Encountered issue while running the application: {}", e.getMessage());
+      var taskStatusFuture = CompletableFuture.supplyAsync(() -> new FileRenameTask(arguments).call());
+      log.info("Process finished with status {}", taskStatusFuture.get());
+    } catch (Exception exception) {
+      log.error("Encountered issue while running the application: {}", exception.getMessage());
     }
   }
 
