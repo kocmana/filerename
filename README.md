@@ -48,11 +48,18 @@ The arguments specified above will cause the following behavior:
 | `img.jpg`                  | Does not match pattern and won't be treated |
 
 
+#### Enumeration Transformation Rule - `<<E|{format_string_syntax}}`
+
+This rule allows to add increasing numbers to the filename. Additional formatting arguments can be provided using the  [Java Format String syntax](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Formatter.html#syntax).
+If no formatting argument is provided (`<<E>>`) only the number itself will be used (synonymous with `<<E|%d>>`).
+
+TODO - expand here
+
 ## How to Extend the Ruleset
 
 New rules/patterns can be added easily: 
 1. Add a new transformation rule by implementing all required methods of the `TransformationRule` interface
-2. Add the generator function to the `TransformationRuleFactoryConfiguration` in the form of a `TransformationRuleGenerator` that consumes the input and output pattern provided as String and provides an `Optional<TransformationRule` as result. Please take the contract of the API into consideration to ensure proper functionality: 
+2. Add the generator function to the `TransformationRuleFactoryConfiguration` in the form of a `TransformationRuleGenerator` that consumes the input and output pattern provided as String and provides an `Optional<TransformationRule>` as result. Please take the contract of the API into consideration to ensure proper functionality: 
    * return `Optional.empty()` if the pattern provided does not indicate that the rule is applicable to the task
    * return `Optional.of(yourRuleInstance)` in cases where the rule is applicable to the task
    * throw an `IllegalArgumentException` in cases where the input and/or output string does clearly indicate wrong input that can't be parsed (e.g. `image<<ddMMyyyy.jpg` for a timestamp transformation rule)

@@ -9,11 +9,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TimestampTransformationRule implements TransformationRule {
-
-  private static final String DATE_FORMAT_EXTRACTION_TEMPLATE = "(?<leading>.*?)(<{2}(?<dateFormat>.*)>{2})(?<trailing>.*?).(?<fileSuffix>.+)\\b";
+//(?<leading>.*?)(<{2}TS(\|(?<dateFormat>.+))?>{2})(?<trailing>.*?)\.(?<fileSuffix>.+)\b
+  private static final String DATE_FORMAT_EXTRACTION_TEMPLATE = "(?<leading>.*?)(<{2}TS(\\|(?<dateFormat>.+))?>{2})(?<trailing>.*?)\\.(?<fileSuffix>.+)\\b";
   private static final Pattern DATE_FORMAT_EXTRACTION_PATTERN = Pattern.compile(DATE_FORMAT_EXTRACTION_TEMPLATE);
 
-  private static final String TIMESTAMP_TRANSFORMATION_RULE_MARKER = "(<{2}.*>{2})";
+  private static final String TIMESTAMP_TRANSFORMATION_RULE_MARKER = "(<{2}TS\\|.*?>{2})";
   private static final String DATE_GROUP_MARKER = "(?<date>.*?)";
 
   private final Pattern inputSearchPattern;

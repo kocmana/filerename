@@ -23,7 +23,7 @@ class TimestampTransformationRuleTest {
 
   @ParameterizedTest
   @CsvSource({
-      "foo<<dd>>.jpg, bar<<dd>>.png"
+      "foo<<TS|dd>>.jpg, bar<<TS|dd>>.png"
   })
   void generateIfRuleIsApplicableReturnsInstance(String inputPattern, String outputPattern) {
     var actualResult = FACTORY_METHOD.generate(inputPattern, outputPattern);
@@ -33,17 +33,17 @@ class TimestampTransformationRuleTest {
 
   @Test
   void exceptionIsThrownIfOutputTargetDoesNotContainDateTemplate(){
-    assertThatIllegalArgumentException().isThrownBy(()-> FACTORY_METHOD.generate("foo<<dd>>.jpg", "bar.jpg"))
+    assertThatIllegalArgumentException().isThrownBy(()-> FACTORY_METHOD.generate("foo<<TS|dd>>.jpg", "bar.jpg"))
         .withMessage("Date template found in source pattern but not target pattern.");
   }
 
   @Test
   void transformToSearchPatternWorksAsExpected() {
-    var underTest = FACTORY_METHOD.generate("foo<<yyyyMMdd>>.bar", "<<ddMMyyyy>>bar.foo");
+    var underTest = FACTORY_METHOD.generate("foo<<TS|yyyyMMdd>>.bar", "<<TS|ddMMyyyy>>bar.foo");
     assertThat(underTest).isPresent();
     var transformationRule = underTest.orElseThrow(UnknownError::new);
 
-    var actualResult = transformationRule.replaceTemplateWithSearchString("foo<<yyyyMMdd>>.bar");
+    var actualResult = transformationRule.replaceTemplateWithSearchString("foo<<TS|yyyyMMdd>>.bar");
 
     assertThat(actualResult).isEqualTo("foo(?<date>.*?).bar");
   }
