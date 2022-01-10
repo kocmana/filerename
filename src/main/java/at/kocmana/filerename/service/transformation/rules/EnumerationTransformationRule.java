@@ -5,6 +5,7 @@ import at.kocmana.filerename.service.transformation.TransformationRuleGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -92,11 +93,11 @@ public class EnumerationTransformationRule implements TransformationRule {
   }
 
   @Override
-  public String apply(String filename, String outputPattern) {
-
+  public String apply(Path file, String outputPattern) {
+    var filename = file.getFileName().toString();
     log.warn("Filename: {}, outputPattern: {}", filename, outputPattern);
 
-    var currentIndex = String.format(enumerationFormat, this.currentIndex.getAndIncrement());
-    return outputPattern.replaceAll(ENUMERATION_TRANSFORMATION_RULE_MARKER, currentIndex);
+    var formattedIndex = String.format(enumerationFormat, this.currentIndex.getAndIncrement());
+    return outputPattern.replaceAll(ENUMERATION_TRANSFORMATION_RULE_MARKER, formattedIndex);
   }
 }

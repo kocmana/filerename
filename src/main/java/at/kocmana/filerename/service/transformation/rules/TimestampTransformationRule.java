@@ -2,6 +2,7 @@ package at.kocmana.filerename.service.transformation.rules;
 
 import at.kocmana.filerename.service.transformation.TransformationRuleGenerator;
 
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -9,7 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TimestampTransformationRule implements TransformationRule {
-//(?<leading>.*?)(<{2}TS(\|(?<dateFormat>.+))?>{2})(?<trailing>.*?)\.(?<fileSuffix>.+)\b
+  //(?<leading>.*?)(<{2}TS(\|(?<dateFormat>.+))?>{2})(?<trailing>.*?)\.(?<fileSuffix>.+)\b
   private static final String DATE_FORMAT_EXTRACTION_TEMPLATE = "(?<leading>.*?)(<{2}TS(\\|(?<dateFormat>.+))?>{2})(?<trailing>.*?)\\.(?<fileSuffix>.+)\\b";
   private static final Pattern DATE_FORMAT_EXTRACTION_PATTERN = Pattern.compile(DATE_FORMAT_EXTRACTION_TEMPLATE);
 
@@ -89,7 +90,8 @@ public class TimestampTransformationRule implements TransformationRule {
   }
 
   @Override
-  public String apply(String filename, String outputPattern) {
+  public String apply(Path file, String outputPattern) {
+    var filename = file.getFileName().toString();
     var inputMatcher = inputSearchPattern.matcher(filename);
     if (!inputMatcher.find()) {
       var message = String.format("Could not identify date pattern in filename \"%s\"", filename);

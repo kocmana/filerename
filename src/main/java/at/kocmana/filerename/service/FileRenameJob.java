@@ -29,10 +29,9 @@ public class FileRenameJob implements Callable<FileRenameJob.JobStatus> {
 
   @Override
   public JobStatus call() {
-    var filename = jobArguments.inputFile().getFileName().toString();
     outputFileName = jobArguments.outputTemplate();
     for (var transformationRule : jobArguments.transformationRules()) {
-      outputFileName = transformationRule.apply(filename, outputFileName);
+      outputFileName = transformationRule.apply(jobArguments.inputFile(), outputFileName);
     }
 
     jobStatus = JobStatus.READY;
@@ -45,7 +44,7 @@ public class FileRenameJob implements Callable<FileRenameJob.JobStatus> {
         jobStatus = JobStatus.SUCCESS;
       } catch (Exception exception) {
         log.error("Could not rename filename from {} to {}: {}",
-                filename, outputFileName, exception.getMessage());
+                jobArguments.inputFile().getFileName(), outputFileName, exception.getMessage());
         jobStatus = JobStatus.FAILED;
       }
     } else {
