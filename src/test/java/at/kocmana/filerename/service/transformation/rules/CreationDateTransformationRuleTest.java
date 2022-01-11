@@ -51,21 +51,4 @@ class CreationDateTransformationRuleTest {
         .withMessage("Unknown pattern letter: T");
   }
 
-  @Test
-  void applyWithoutArgumentsGeneratesCorrectFilename() {
-    //given
-    Path file = Paths.get("src", "test", "resources", "testfiles", "testfile.img");
-
-    var outputPattern = "image<<CD>>.jpg";
-    var underTestOptional = CreationDateTransformationRule.FACTORY_METHOD.generate("image.jpg", outputPattern);
-
-    //when
-    assertThat(underTestOptional).isPresent();
-    var underTest = underTestOptional.orElseThrow(Error::new);
-    var actualResult = underTest.apply(file, outputPattern);
-
-    //then
-    assertThat(actualResult).isEqualTo("image2022-01-11T15:17:59.1355439.jpg");
-  }
-
 }
