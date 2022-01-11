@@ -68,20 +68,4 @@ class CreationDateTransformationRuleTest {
     assertThat(actualResult).isEqualTo("image2022-01-11T15:17:59.1355439.jpg");
   }
 
-  @Test
-  void applyWithArgumentGeneratesCorrectFilename() {
-    //given
-    Path file = openTestFile("testfile.img");
-
-    var outputPattern = "image<<CD|dd-MM-yyyy>>.jpg";
-    var underTestOptional = CreationDateTransformationRule.FACTORY_METHOD.generate("image.jpg", outputPattern);
-
-    //when
-    assertThat(underTestOptional).isPresent();
-    var underTest = underTestOptional.orElseThrow(Error::new);
-    var actualResult = underTest.apply(file, outputPattern);
-
-    //then
-    assertThat(actualResult).isEqualTo("image11-01-2022.jpg");
-  }
 }
