@@ -1,5 +1,7 @@
 package at.kocmana.filerename.service.transformation.rules;
 
+import java.nio.file.Path;
+
 public interface TransformationRule {
 
   TransformationRuleIdentity getIdentity();
@@ -14,6 +16,6 @@ public interface TransformationRule {
 
   String replaceTemplateWithSearchString(String inputPattern);
 
-  String apply(String filename, String outputPattern);
+  String apply(Path file, String outputPattern);
 
 }

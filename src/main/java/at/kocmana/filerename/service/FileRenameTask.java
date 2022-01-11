@@ -40,6 +40,7 @@ public class FileRenameTask implements Callable<FileRenameTask.TaskStatus> {
   @Override
   public TaskStatus call() {
     transformationRules = TransformationRuleFactory.generateApplicableTransformationRules(arguments.inputTemplate(), arguments.outputTemplate());
+    transformationRules.forEach(transformationRule -> log.info(transformationRule.toString()));
     var searchString = generateFileSearchPattern();
     generateRenameJobs(searchString);
 
@@ -50,7 +51,7 @@ public class FileRenameTask implements Callable<FileRenameTask.TaskStatus> {
               .forEach(FileRenameJob::call);
       this.taskStatus = TaskStatus.SUCCESS;
     } catch (Exception exception) {
-      log.error("Could not finish task with arguments: {}: {}", arguments, exception.getMessage());
+      log.error("Could not finish task with arguments: {}: {}", arguments, exception.getMessage(), exception);
     }
 
     return taskStatus;

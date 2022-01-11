@@ -44,7 +44,7 @@ public class CliController implements Runnable {
       var taskStatusFuture = CompletableFuture.supplyAsync(() -> new FileRenameTask(arguments).call());
       log.info("Process finished with status {}", taskStatusFuture.get());
     } catch (Exception exception) {
-      log.error("Encountered issue while running the application: {}", exception.getMessage());
+      log.error("Encountered issue while running the application: {}.", exception.getMessage(), exception);
     }
   }
 
