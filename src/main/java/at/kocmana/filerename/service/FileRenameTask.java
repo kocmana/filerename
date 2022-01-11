@@ -51,7 +51,7 @@ public class FileRenameTask implements Callable<FileRenameTask.TaskStatus> {
               .forEach(FileRenameJob::call);
       this.taskStatus = TaskStatus.SUCCESS;
     } catch (Exception exception) {
-      log.error("Could not finish task with arguments: {}: {}", arguments, exception.getMessage());
+      log.error("Could not finish task with arguments: {}: {}", arguments, exception.getMessage(), exception);
     }
 
     return taskStatus;
