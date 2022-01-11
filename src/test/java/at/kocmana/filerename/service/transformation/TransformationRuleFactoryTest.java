@@ -1,5 +1,6 @@
 package at.kocmana.filerename.service.transformation;
 
+import at.kocmana.filerename.service.transformation.rules.CreationDateTransformationRule;
 import at.kocmana.filerename.service.transformation.rules.EnumerationTransformationRule;
 import at.kocmana.filerename.service.transformation.rules.TimestampTransformationRule;
 import org.junit.jupiter.api.Test;
@@ -42,10 +43,26 @@ class TransformationRuleFactoryTest {
     assertThat(firstRule).isInstanceOf(EnumerationTransformationRule.class);
   }
 
-  @Test
-  void assertThatRuleFactoryCreatesMultipleEnumerationTransformationRules() {
+  @ParameterizedTest
+  @ValueSource(strings = {"<<CD>>", "<<CD|dd-MM-yyyy>>"})
+  void assertThatRuleFactoryCreatesCreationDateTransformationRules(String ruleTemplate) {
     //given
-    var inputPattern = "foo<<TS|yyyyMMdd>><<E>>.bar";
+    var inputPattern = "foo.bar";
+    var ouputPattern = String.format("foo%s.bar", ruleTemplate);
+
+    //when
+    var actualResult = TransformationRuleFactory.generateApplicableTransformationRules(inputPattern, ouputPattern);
+
+    //then
+    assertThat(actualResult).hasSize(1);
+    var firstRule = actualResult.get(0);
+    assertThat(firstRule).isInstanceOf(CreationDateTransformationRule.class);
+  }
+
+  @Test
+  void assertThatRuleFactoryCreatesMultipleTransformationRules() {
+    //given
+    var inputPattern = "foo<<TS|yyyyMMdd>>.bar";
     var ouputPattern = "bar<<TS|dd-MM-yyyy>><<E>>.foo";
 
     //when

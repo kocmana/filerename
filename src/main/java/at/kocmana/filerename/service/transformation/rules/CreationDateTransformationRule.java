@@ -1,7 +1,7 @@
 package at.kocmana.filerename.service.transformation.rules;
 
+import at.kocmana.filerename.model.exception.TransformationRuleException;
 import at.kocmana.filerename.service.transformation.TransformationRuleGenerator;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -11,29 +11,39 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.TimeZone;
 
-public class LastChangedDateTransformationRule extends AbstractTransformationRule {
+public class CreationDateTransformationRule extends AbstractTransformationRule {
 
   private static final String RULE_SHORTCUT = "CD";
   private static final ZoneId LOCAL_TIMEZONE = TimeZone.getDefault().toZoneId();
+  private static final DateTimeFormatter DEFAULT_DATE_TIME_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-  DateTimeFormatter dtf = DateTimeFormatter.ISO_DATE_TIME;
+  DateTimeFormatter dtf;
 
-  public static final TransformationRuleGenerator FACTORY_METHOD = LastChangedDateTransformationRule::generateIfRuleIsApplicable;
+  public static final TransformationRuleGenerator FACTORY_METHOD =
+      CreationDateTransformationRule::generateIfRuleIsApplicable;
 
   private static Optional<TransformationRule> generateIfRuleIsApplicable(String inputPattern, String outputPattern) {
     if (!ruleMarkerIsPresent(RULE_SHORTCUT, outputPattern)) {
       return Optional.empty();
     }
-    return Optional.of(new LastChangedDateTransformationRule(RULE_SHORTCUT, inputPattern, outputPattern));
+    return Optional.of(new CreationDateTransformationRule(RULE_SHORTCUT, inputPattern, outputPattern));
   }
 
-  private LastChangedDateTransformationRule(String ruleShortcut, String inputFilenamePattern, String outputFilenamePattern) {
+  private CreationDateTransformationRule(String ruleShortcut, String inputFilenamePattern,
+                                         String outputFilenamePattern) {
     super(ruleShortcut, inputFilenamePattern, outputFilenamePattern);
     if (this.getOutputRuleArguments().isBlank()) {
-      dtf = DateTimeFormatter.ISO_DATE_TIME;
+      dtf = DEFAULT_DATE_TIME_FORMAT;
     } else {
       dtf = DateTimeFormatter.ofPattern(this.getOutputRuleArguments());
     }
+  }
+
+  public String toString() {
+    var exampleCreationTimestamp = LocalDateTime.of(1990, 10, 15, 10, 35, 22, 123);
+    var formattedExampleCreationTimestamp = dtf.format(exampleCreationTimestamp);
+    return String.format("Creation Date Transformation Rule: Adding file creation date, will be formatted as \"%s\".",
+        formattedExampleCreationTimestamp);
   }
 
   @Override
@@ -44,9 +54,11 @@ public class LastChangedDateTransformationRule extends AbstractTransformationRul
       var creationTimeInstant = fileAttributes.creationTime().toInstant();
       creationTime = LocalDateTime.ofInstant(creationTimeInstant, LOCAL_TIMEZONE);
     } catch (Exception exception) {
-      throw new RuntimeException(exception); //TODO add own exception type here
+      var message = String.format("Could not determine creation time of file \"%s\": %s",
+          file.getFileName().toString(), exception.getMessage());
+      throw new TransformationRuleException(message, exception);
     }
     var formattedCreationTime = creationTime.format(dtf);
-    return outputPattern.replaceAll(getFilenameRuleGroupName(), formattedCreationTime);
+    return outputPattern.replaceAll(getGenericRulePattern(), formattedCreationTime);
   }
 }
