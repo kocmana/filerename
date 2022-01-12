@@ -7,6 +7,7 @@ public record CommandLineArguments(
     boolean recursive,
     String inputTemplate,
     String outputTemplate,
-    boolean dryRun
+    boolean dryRun,
+    boolean createCopy
 ) {
 }

@@ -9,6 +9,7 @@ public record JobArguments(
         Path inputFile,
         List<TransformationRule> transformationRules,
         String outputTemplate,
-        boolean dryRun
+        boolean dryRun,
+        boolean createCopy
 ) {
 }
