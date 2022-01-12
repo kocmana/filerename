@@ -4,9 +4,6 @@ import at.kocmana.filerename.model.CommandLineArguments;
 import at.kocmana.filerename.model.JobArguments;
 import at.kocmana.filerename.service.transformation.TransformationRuleFactory;
 import at.kocmana.filerename.service.transformation.rules.TransformationRule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,6 +15,8 @@ import java.util.concurrent.Callable;
 import java.util.function.BiPredicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileRenameTask implements Callable<FileRenameTask.TaskStatus> {
 
@@ -39,7 +38,8 @@ public class FileRenameTask implements Callable<FileRenameTask.TaskStatus> {
 
   @Override
   public TaskStatus call() {
-    transformationRules = TransformationRuleFactory.generateApplicableTransformationRules(arguments.inputTemplate(), arguments.outputTemplate());
+    transformationRules = TransformationRuleFactory.generateApplicableTransformationRules(arguments.inputTemplate(),
+        arguments.outputTemplate());
     transformationRules.forEach(transformationRule -> log.info(transformationRule.toString()));
     var searchString = generateFileSearchPattern();
     generateRenameJobs(searchString);
@@ -48,7 +48,7 @@ public class FileRenameTask implements Callable<FileRenameTask.TaskStatus> {
 
     try {
       fileRenameJobs.parallelStream()
-              .forEach(FileRenameJob::call);
+          .forEach(FileRenameJob::call);
       this.taskStatus = TaskStatus.SUCCESS;
     } catch (Exception exception) {
       log.error("Could not finish task with arguments: {}: {}", arguments, exception.getMessage(), exception);
@@ -59,8 +59,8 @@ public class FileRenameTask implements Callable<FileRenameTask.TaskStatus> {
 
   public String getStatus() {
     return fileRenameJobs.stream()
-            .map(Objects::toString)
-            .collect(Collectors.joining("\r\n"));
+        .map(Objects::toString)
+        .collect(Collectors.joining("\r\n"));
   }
 
   private String generateFileSearchPattern() {
@@ -86,20 +86,21 @@ public class FileRenameTask implements Callable<FileRenameTask.TaskStatus> {
       log.info("Files matching provided input pattern:\r\n\t{}", matchingFilesToString(files));
 
       fileRenameJobs = files.stream()
-              .map(file -> new JobArguments(file, transformationRules, arguments.outputTemplate(), arguments.dryRun()))
-              .map(FileRenameJob::new)
-              .toList();
+          .map(file -> new JobArguments(file, transformationRules, arguments.outputTemplate(), arguments.dryRun(),
+              arguments.createCopy()))
+          .map(FileRenameJob::new)
+          .toList();
     } catch (IOException exception) {
       failTask("Could not lookup files in directory {}: {}",
-              arguments.path().toAbsolutePath().toString(),
-              exception.getMessage());
+          arguments.path().toAbsolutePath().toString(),
+          exception.getMessage());
     }
   }
 
   private String matchingFilesToString(List<Path> files) {
     return files.stream()
-            .map(Path::toString)
-            .collect(Collectors.joining("\r\n\t"));
+        .map(Path::toString)
+        .collect(Collectors.joining("\r\n\t"));
   }
 
   private void failTask(String errorMessage, Object... errorMessageArguments) {

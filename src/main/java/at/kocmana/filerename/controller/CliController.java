@@ -39,8 +39,14 @@ public class CliController implements Runnable {
     private String outputTemplate;
 
     @Option(names = {"-d", "--dryRun"},
-        description = "Setting this parameter will only display how the file names will be changed", defaultValue = "false")
+        description = "Setting this parameter will only display how the file names will be changed without " +
+            "performing any changes", defaultValue = "false")
     private boolean dryRun = false;
+
+    @Option(names = {"-cp", "--copy"},
+        description = "Define the operation to be performed. If set, files will be copied instead of renamed.",
+        defaultValue = "false")
+    private boolean createCopy = false;
   }
 
   @Override
@@ -49,7 +55,7 @@ public class CliController implements Runnable {
     try {
       var completableFutures = arguments.stream()
           .map(FileRenameTask::new)
-          .map(task -> CompletableFuture.supplyAsync(() -> task.call()))
+          .map(task -> CompletableFuture.supplyAsync(task::call))
           .toList();
 
       var allTasksFutures = CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]));
@@ -65,7 +71,7 @@ public class CliController implements Runnable {
   List<CommandLineArguments> mapArguments() {
     return cliArguments.stream()
         .map(args -> new CommandLineArguments(args.path, args.recursive, args.inputTemplate, args.outputTemplate,
-            args.dryRun))
+            args.dryRun, args.createCopy))
         .toList();
   }
 

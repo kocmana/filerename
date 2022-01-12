@@ -1,11 +1,10 @@
 package at.kocmana.filerename.service;
 
 import at.kocmana.filerename.model.JobArguments;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.file.Files;
 import java.util.concurrent.Callable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileRenameJob implements Callable<FileRenameJob.JobStatus> {
 
@@ -20,7 +19,7 @@ public class FileRenameJob implements Callable<FileRenameJob.JobStatus> {
   }
 
   public JobStatus getJobStatus() {
-    return  jobStatus;
+    return jobStatus;
   }
 
   public JobArguments getJobArguments() {
@@ -39,18 +38,25 @@ public class FileRenameJob implements Callable<FileRenameJob.JobStatus> {
 
     jobStatus = JobStatus.RUNNING;
     if (!jobArguments.dryRun()) {
-      try {
-        Files.move(jobArguments.inputFile(), jobArguments.inputFile().resolveSibling(outputFileName));
-        jobStatus = JobStatus.SUCCESS;
-      } catch (Exception exception) {
-        log.error("Could not rename filename from {} to {}: {}",
-                jobArguments.inputFile().getFileName(), outputFileName, exception.getMessage());
-        jobStatus = JobStatus.FAILED;
-      }
-    } else {
-      jobStatus = JobStatus.SUCCESS;
+      performFileOperation();
     }
     return jobStatus;
+  }
+
+  private void performFileOperation() {
+    try {
+      if (jobArguments.createCopy()) {
+        Files.copy(jobArguments.inputFile(), jobArguments.inputFile().resolveSibling(outputFileName));
+      } else {
+        Files.move(jobArguments.inputFile(), jobArguments.inputFile().resolveSibling(outputFileName));
+      }
+      jobStatus = JobStatus.SUCCESS;
+    } catch (Exception exception) {
+      var operation = jobArguments.createCopy() ? "copy" : "rename";
+      log.error("Could not {} filename from {} to {}: {}",
+          operation, jobArguments.inputFile().getFileName(), outputFileName, exception.getMessage());
+      jobStatus = JobStatus.FAILED;
+    }
   }
 
   @Override
@@ -59,8 +65,8 @@ public class FileRenameJob implements Callable<FileRenameJob.JobStatus> {
     var outputFilenameRepresentation = outputFileName != null ? outputFileName : "currently undefined";
 
     return String.format("%s -> %s: %s",
-            inputFilenameRepresentation, outputFilenameRepresentation,
-            jobStatus);
+        inputFilenameRepresentation, outputFilenameRepresentation,
+        jobStatus);
   }
 
   public enum JobStatus {
