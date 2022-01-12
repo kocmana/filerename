@@ -72,8 +72,6 @@ public class EnumerationTransformationRule extends AbstractTransformationRule {
 
   @Override
   public String apply(String filename, String outputPattern) {
-    log.warn("Filename: {}, outputPattern: {}", filename, outputPattern);
-
     var formattedIndex = String.format(enumerationFormat, this.currentIndex.getAndIncrement());
     return outputPattern.replaceAll(getGenericRulePattern(), formattedIndex);
   }
