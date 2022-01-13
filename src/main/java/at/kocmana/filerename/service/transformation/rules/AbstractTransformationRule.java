@@ -46,17 +46,17 @@ public abstract class AbstractTransformationRule implements TransformationRule {
   }
 
   private String generateFilenameGroupPattern(String ruleAbbreviation) {
-    return String.format("<<%s>>", ruleAbbreviation);
+    return String.format("(?<%s>.*?)", ruleAbbreviation);
   }
 
   private String extractGroup(String filenamePattern) {
-    return matcherFor(filenamePattern)
+    return ruleMatcherFor(filenamePattern)
         .map(m -> m.group("ruleArguments"))
         .orElse("");
   }
 
   private TransformationRuleIdentity generateIdentity() {
-    var matcher = matcherFor(outputFilenamePattern)
+    var matcher = ruleMatcherFor(outputFilenamePattern)
         .orElseThrow(() -> generateIllegalStateException("Could not create rule identity for rule %s pattern \"%s\"",
             this.getClass().getSimpleName(), outputFilenamePattern));
     return new TransformationRuleIdentity(matcher.start("rule"), matcher.end("rule"));
@@ -67,16 +67,26 @@ public abstract class AbstractTransformationRule implements TransformationRule {
     return new IllegalStateException(message);
   }
 
-  private Optional<Matcher> matcherFor(String filenamePattern) {
-    if (filenamePattern == null) {
+  protected Optional<Matcher> ruleMatcherFor(String filenamePattern) {
+    return matcherFor(ruleExtractionPattern, filenamePattern);
+  }
+
+  protected Optional<Matcher> fileNameMatcherFor(String filename) {
+    var filenamePattern = Pattern.compile(replaceTemplateWithSearchString(inputFilenamePattern));
+    return matcherFor(filenamePattern, filename);
+  }
+
+  private Optional<Matcher> matcherFor(Pattern pattern, String stringToSearch) {
+    if (stringToSearch == null) {
       throw new IllegalArgumentException("Can't extract matcher. Provided filename is null");
     }
-    var matcher = ruleExtractionPattern.matcher(filenamePattern);
+    var matcher = pattern.matcher(stringToSearch);
     if (!matcher.find()) {
       return Optional.empty();
     }
     return Optional.of(matcher);
   }
+
 
   private static String generateTemplateExtractionPattern(String templateShortcut) {
     //(?<leading>.*?)(<{2}TS(\|(?<dateFormat>.+))?>{2})(?<trailing>.*?)\.(?<fileSuffix>.+)\b
@@ -100,8 +110,7 @@ public abstract class AbstractTransformationRule implements TransformationRule {
 
   @Override
   public String replaceTemplateWithSearchString(String pattern) {
-    //return pattern.replaceAll(genericRulePattern, filenameRuleGroupName);
-    return pattern;
+    return pattern.replaceAll(genericRulePattern, filenameRuleGroupName);
   }
 
   @Override
