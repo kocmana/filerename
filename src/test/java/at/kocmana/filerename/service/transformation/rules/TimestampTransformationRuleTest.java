@@ -33,8 +33,9 @@ class TimestampTransformationRuleTest {
 
   @Test
   void exceptionIsThrownIfOutputTargetDoesNotContainDateTemplate(){
-    assertThatIllegalArgumentException().isThrownBy(()-> FACTORY_METHOD.generate("foo<<TS|dd>>.jpg", "bar.jpg"))
-        .withMessage("Date template found in source pattern but not target pattern.");
+    var actualResult = FACTORY_METHOD.generate("foo<<TS|dd>>.jpg", "bar.jpg");
+
+    assertThat(actualResult).isEmpty();
   }
 
   @Test
@@ -45,6 +46,6 @@ class TimestampTransformationRuleTest {
 
     var actualResult = transformationRule.replaceTemplateWithSearchString("foo<<TS|yyyyMMdd>>.bar");
 
-    assertThat(actualResult).isEqualTo("foo(?<date>.*?).bar");
+    assertThat(actualResult).isEqualTo("foo(?<TS>.*?).bar");
   }
 }
