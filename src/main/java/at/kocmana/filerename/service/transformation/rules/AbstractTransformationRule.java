@@ -14,31 +14,32 @@ public abstract class AbstractTransformationRule implements TransformationRule {
   private static final String RULE_ARGUMENTS_MARKER = "(\\|(?<ruleArguments>.+))?";
   private static final String RULE_END_MARKER = "\\>{2})";
 
+  private final String inputFilenamePattern;
+  private final String outputFilenamePattern;
+
   private final String ruleExtractionTemplate;
   private final Pattern ruleExtractionPattern;
 
   private final String ruleAbbreviation;
-  private final String genericRulePattern;
   private final String inputRuleArguments;
   private final String outputRuleArguments;
-  private final String filenameRuleGroupName;
-
-  private final String inputFilenamePattern;
-  private final String outputFilenamePattern;
-
   private final TransformationRuleIdentity identity;
 
-  protected AbstractTransformationRule(String ruleAbbreviation, String inputFilenamePattern, String outputFilenamePattern) {
+  private final String filenameRuleGroupName;
+  private final String genericRulePattern;
+
+  protected AbstractTransformationRule(String ruleAbbreviation, String inputFilenamePattern,
+                                       String outputFilenamePattern) {
     this.ruleAbbreviation = ruleAbbreviation;
     this.inputFilenamePattern = inputFilenamePattern;
     this.outputFilenamePattern = outputFilenamePattern;
-    ruleExtractionTemplate = generateTemplateExtractionPattern(ruleAbbreviation);
-    ruleExtractionPattern = Pattern.compile(ruleExtractionTemplate);
-    genericRulePattern = generateGroupPattern(ruleAbbreviation);
-    filenameRuleGroupName = generateFilenameGroupPattern(ruleAbbreviation);
-    inputRuleArguments = extractGroup(inputFilenamePattern);
-    outputRuleArguments = extractGroup(outputFilenamePattern);
-    identity = generateIdentity();
+    this.ruleExtractionTemplate = generateTemplateExtractionPattern(ruleAbbreviation);
+    this.ruleExtractionPattern = Pattern.compile(ruleExtractionTemplate);
+    this.genericRulePattern = generateGroupPattern(ruleAbbreviation);
+    this.filenameRuleGroupName = generateFilenameGroupPattern(ruleAbbreviation);
+    this.inputRuleArguments = extractGroup(inputFilenamePattern);
+    this.outputRuleArguments = extractGroup(outputFilenamePattern);
+    this.identity = generateIdentity();
   }
 
   private String generateGroupPattern(String ruleShortcut) {
@@ -56,10 +57,15 @@ public abstract class AbstractTransformationRule implements TransformationRule {
   }
 
   private TransformationRuleIdentity generateIdentity() {
-    var matcher = ruleMatcherFor(outputFilenamePattern)
-        .orElseThrow(() -> generateIllegalStateException("Could not create rule identity for rule %s pattern \"%s\"",
-            this.getClass().getSimpleName(), outputFilenamePattern));
-    return new TransformationRuleIdentity(matcher.start("rule"), matcher.end("rule"));
+    var inputRange = generateIdentityRangeFromFilenamePattern(inputFilenamePattern);
+    var outputRange = generateIdentityRangeFromFilenamePattern(outputFilenamePattern);
+    return new TransformationRuleIdentity(inputRange, outputRange);
+  }
+
+  private TransformationRuleIdentity.Range generateIdentityRangeFromFilenamePattern(String filenamePattern) {
+    return ruleMatcherFor(filenamePattern)
+        .map(matcher -> new TransformationRuleIdentity.Range(matcher.start("rule"), matcher.end("rule")))
+        .orElse(new TransformationRuleIdentity.Range(0, 0));
   }
 
   protected IllegalStateException generateIllegalStateException(String messageTemplate, String... arguments) {
@@ -76,7 +82,7 @@ public abstract class AbstractTransformationRule implements TransformationRule {
     return matcherFor(filenamePattern, filename);
   }
 
-  private Optional<Matcher> matcherFor(Pattern pattern, String stringToSearch) {
+  protected Optional<Matcher> matcherFor(Pattern pattern, String stringToSearch) {
     if (stringToSearch == null) {
       throw new IllegalArgumentException("Can't extract matcher. Provided filename is null");
     }
@@ -100,7 +106,7 @@ public abstract class AbstractTransformationRule implements TransformationRule {
   }
 
   protected static boolean ruleMarkerIsPresent(String ruleShortcut, String filenamePattern) {
-    if (filenamePattern == null || filenamePattern.isBlank()){
+    if (filenamePattern == null || filenamePattern.isBlank()) {
       return false;
     }
     var ruleExtractionPattern = Pattern.compile(generateTemplateExtractionPattern(ruleShortcut));

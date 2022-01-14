@@ -30,6 +30,23 @@ Usage: filerename [-dhrV] -i=<inputTemplate> -o=<outputTemplate> [-p=<path>]
 
 ### Available Templates/Transformation Rules
 
+#### Regex Transformation Rule - `<<R|{regular_expression}`
+
+This rule allows to define a regular expression against which the filenames are matched.
+
+This can be used in two ways: 
+* Either only as part as the input pattern to match several files. Subsequently, other rules can be defined in the output pattern to modify these files:
+
+| InputPattern | OutputPattern   | Filename      | Resulting Filename |
+|-----------|-----------------|---------------|--------------------|
+| `IMAGE_<<R | [0-9]{3}>>.jpg` | `picture-<<CD |yyyy-MM-dd>>.JPG` | `IMAGE001.jpg` | `picture-2020-10-21.JPG` | 
+
+* As part of both input and output pattern: This allows to shift a defined char sequence in many files following the same pattern to a different position if the output pattern.
+  | InputPattern | OutputPattern   | Filename      | Resulting Filename |
+  |-----------|-----------------|---------------|--------------------|
+  | `IMAGE_<<R | [0-9]{3}>>.jpg` | `<<R>>-picture.JPG` | `IMAGE001.jpg` | `001-picture.JPG` |
+
+
 #### Timestamp Transformation Rule - `<<TS|{timestamp_pattern>>`
 
 This rule allows defining source and target timestamp patterns based on
@@ -44,10 +61,10 @@ filerename -i "img<<TS|ddMMyyyyHHmmssSSS>>.jpg" -o "image<<TS|yyyy-MM-dd_HHmmssS
 
 The arguments specified above will cause the following behavior:
 
-| Input Filename             | Output Filename                             |
-|----------------------------|---------------------------------------------|
-| `img20122021125401451.jpg` | `image2021-12-20_125401451.jpg`             |
-| `img4112202101023456.jpg`  | Failure due to incorrect date information   |
+| Input Filename             | Output Filename                            |
+|----------------------------|--------------------------------------------|
+| `img20122021125401451.jpg` | `image2021-12-20_125401451.jpg`            |
+| `img4112202101023456.jpg`  | Failure due to incorrect date information  |
 | `img.jpg`                  | Does not match pattern and won't be treated |
 
 #### File Creation Date Transformation Rule - `<<CD|{timestamp_pattern}}`

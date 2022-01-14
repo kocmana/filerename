@@ -3,6 +3,7 @@ package at.kocmana.filerename.service.transformation;
 import at.kocmana.filerename.service.transformation.rules.CreationDateTransformationRule;
 import at.kocmana.filerename.service.transformation.rules.EnumerationTransformationRule;
 import at.kocmana.filerename.service.transformation.rules.TimestampTransformationRule;
+import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
@@ -71,10 +72,9 @@ class TransformationRuleFactoryTest {
     //then
     assertThat(actualResult).hasSize(2);
     var firstRule = actualResult.get(0);
-    assertThat(firstRule).isInstanceOf(TimestampTransformationRule.class);
     var secondRule = actualResult.get(1);
-    assertThat(secondRule).isInstanceOf(EnumerationTransformationRule.class);
-
+    assertThat(firstRule).isInstanceOf(EnumerationTransformationRule.class);
+    assertThat(secondRule).isInstanceOf(TimestampTransformationRule.class);
   }
 
   @ParameterizedTest
