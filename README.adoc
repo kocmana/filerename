@@ -1,13 +1,11 @@
 = FileRename
 
-:toc:
-:toc-placement: preamble
+:toc: macro
+:toc-placement!:
 :toclevels: 3
 :showtitle:
-:Some attr: Some value
 
-// Need some preamble to get TOC:
-{empty}
+toc::[]
 
 == About
 
