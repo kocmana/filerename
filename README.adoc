@@ -2,8 +2,9 @@
 
 :toc:
 :toc-placement: preamble
-:toclevels: 1
+:toclevels: 3
 :showtitle:
+:Some attr: Some value
 
 // Need some preamble to get TOC:
 {empty}
