@@ -1,28 +1,49 @@
-= FileRename
-
-WARNING: FileRename is still under development. The application may still be prone to various issues and missing features.
-
 :toc: macro
 :toclevels: 3
-:!toc-title:
+:toc-title: Table of Contents
+
+= FileRename
+
+image:https://github.com/kocmana/filerename/actions/workflows/maven.yml/badge.svg[]
+
+CAUTION: FileRename is still under development and in pre-release status.
 
 toc::[]
 
-== About
+== About the Project
 
-Aim of this project is to provide a mapping solution between the various image naming patterns of mobile device and
-camera manufacturers. Since most manufacturers do not support defining a custom file naming pattern, having several
-different devices can lead to highly different file names for images that were e.g. taken in close temporal proximity.
+Aim of this project is to provide a mapping solution between the various image naming patterns of mobile device and camera manufacturers. Since most manufacturers do not support defining a custom file naming pattern, having several different devices can lead to highly different file names for images that were e.g. taken in close temporal proximity.
 
 The aims of this application are twofold:
 
-* Firstly, the application should provide a command line based solution for this issue, especially with regards to
-different timestamp formats. This solution is intended to be run automatically, e.g. after importing images from a device
-or as cron job.
+* Firstly, the application should provide a command line based solution for this issue, especially with regards to different timestamp formats. This solution is intended to be run automatically, e.g. after importing images from a device or as cron job.
 * Secondly, the application should allow extending and manipulating the ruleset for such transformations easily.
 
-== How To Use
+== Getting Started
 
+=== Prerequisites
+This project requires
+
+* Java Version 17
+* Maven
+
+=== Installation
+To generate an executable jar using maven simply
+. Clone the repository
+----
+git clone git@github.com:kocmana/filerename.git
+----
+. Compile and package the application
+----
+mvn clean package
+----
+. Navigate to the `/target` folder and execute the `filerename-with-dependencies.jar` with one or several of the arguments described in the next section, eg:
+----
+java -jar filerename-with-dependencies.jar -i "image\<<TS|yyyyMMdd_HHmmss>>.jpg -o "\<<TS|yyyyMMdd_HHmmss>>" -d
+----
+
+== How To Use
+Several command line arguments can be used to customize the behavior of the application:
 ----
 Usage: filerename [-hV] ([-p=<path>] [-r] -i=<inputTemplate>
                     -o=<outputTemplate> [-d] [-cp])...
@@ -84,9 +105,11 @@ The arguments specified above will cause the following behavior:
 
 ==== File Creation Date Transformation Rule - `\<<CD|\{timestamp_pattern}}>>`
 
-If no timestamp is available as part of the filename, the file creation date can be used instead. 
+If no timestamp is available as part of the filename, the file creation date can be used instead.
 
-If no `timestamp_pattern` is provided, `ISO_DATE_TIME` will be used per default. 
+If no `timestamp_pattern` is provided, `ISO_DATE_TIME` will be used per default.
+
+NOTE: The creation date of a filename is not necessarily the date the file (e.g. picture) was originally created. It commonly indicates when a file was created on any given system instead.
 
 ===== Example:
 
