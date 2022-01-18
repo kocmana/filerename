@@ -6,7 +6,7 @@ ifdef::env-github[]
 :tip-caption: :bulb:
 :note-caption: :point_right:
 :important-caption: :loudspeaker:
-:caution-caption: :fire:
+:caution-caption: :rotating_light:
 :warning-caption: :warning:
 endif::[]
 
@@ -110,7 +110,7 @@ This can be used in two ways:
 |===
 |InputPattern |OutputPattern |Filename |Resulting Filename
 
-|`IMAGE_\<<R\|[0-9]\{3}>>.jpg` | `picture-\<<CD\|yyyy-MM-dd>>.JPG` |`IMAGE001.jpg` |`picture-2020-10-21.JPG`
+m|`IMAGE_\<<R\|[0-9]\{3}>>.jpg` m| `picture-\<<CD\|yyyy-MM-dd>>.JPG` m|`IMAGE001.jpg` m|`picture-2020-10-21.JPG`
 |===
 
 * As part of both input and output pattern: This allows to shift a defined char sequence in many files following the same pattern to a different position if the output pattern.
@@ -118,7 +118,7 @@ This can be used in two ways:
 |===
 | InputPattern | OutputPattern | Filename | Resulting Filename
 
-| `IMAGE_\<<R\|[0-9]\{3}>>.jpg` | `\<<R>>-picture.JPG` | `IMAGE_001.jpg` | `001-picture.JPG`
+m| `IMAGE_\<<R\|[0-9]\{3}>>.jpg` m| `\<<R>>-picture.JPG` m| `IMAGE_001.jpg` m| `001-picture.JPG`
 |===
 
 ==== Timestamp Transformation Rule - `+<<TS|{timestamp_pattern>>+`
@@ -131,7 +131,7 @@ the https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter
 |===
 | InputPattern | OutputPattern | Filename | Resulting Filename
 
-| `img\<<TS\|ddMMyyyyHHmmssSSS>>.jpg` | `image\<<TS\|yyyy-MM-dd_HHmmss>>.jpg` | `img20122021125401451.jpg` | `image2021-12-20_125401.jpg`
+m| `img\<<TS\|ddMMyyyyHHmmssSSS>>.jpg` m| `image\<<TS\|yyyy-MM-dd_HHmmss>>.jpg` m| `img20122021125401451.jpg` m| `image2021-12-20_125401.jpg`
 |===
 
 ==== File Creation Date Transformation Rule - `\<<CD|\{timestamp_pattern}}>>`
@@ -147,7 +147,7 @@ NOTE: The creation date of a filename is not necessarily the date the file (e.g.
 |===
 | InputPattern | OutputPattern | Filename | Resulting Filename
 
-| `file\<<R\|[0-9]\{5}>>.png` | `image_\<<CD\|yyyy-MM-dd_HHmmss>>.png` | `file00019.png` | `image_2021-12-20_125401.png`
+m| `file\<<R\|[0-9]\{5}>>.png` m| `image_\<<CD\|yyyy-MM-dd_HHmmss>>.png` m| `file00019.png` m| `image_2021-12-20_125401.png`
 |===
 
 ==== Enumeration Transformation Rule - `\<<E|\{format_string_syntax}>>`
@@ -165,8 +165,8 @@ filerename -i "image.jpg" -o "image<<E|%02d>>.jpg"
 |===
 | InputPattern | OutputPattern | Filename | Resulting Filename
 
-| `birthday_\<<R\|(.+)>>.png` | `image_\<<E\|%02d>>.png` | `birthday_1999-12-7-127.png` | `image_01.png`
-| `birthday_\<<R\|(.+)>>.png` | `image_\<<E>>.png` | `birthday_1999-12-7-127.png` | `image_1.png`
+m| `birthday_\<<R\|(.+)>>.png` m| `image_\<<E\|%02d>>.png` m| `birthday_1999-12-7-127.png` m| `image_01.png`
+m| `birthday_\<<R\|(.+)>>.png` m| `image_\<<E>>.png` m| `birthday_1999-12-7-127.png` m| `image_1.png`
 |===
 
 == How to Extend the Ruleset
