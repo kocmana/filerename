@@ -83,19 +83,19 @@ Usage: filerename [-hV] ([-p=<path>] [-r] -i=<inputTemplate>
 java -jar filerename-with-dependencies.jar -i "image_<<TS|yyyyMMdd_HHmmssSSS>>.jpg" -o "<<TS|yyyy-MM-dd_HH-mm-ss>>.jpg" -d -cp
 ----
 
-* **-i**/**-o**: Input and Output filename patterns
-* **-d**: Dry run: This task will let you check if the result is what you expect it to be without performing any actual changes to the files specified
-* **-cp**: This task will create copies of the specified files using their output filenames rather than renaming them.
+* `-i`/`-o`: Input and Output filename patterns
+* `-d`: Dry run: This task will let you check if the result is what you expect it to be without performing any actual changes to the files specified
+* `-cp`: This task will create copies of the specified files using their output filenames rather than renaming them.
 
 ===== Multiple Tasks
 
 ----
-java -jar filerename-with-dependencies.jar -i "image_<<TS|yyyy-MM-dd>>.jpg" -o "<<TS|dd-MM-yyyy>>.jpg" p "./user1/DCIM" -r -i "<<TS|yyyy-MM-dd_HHmmss>>.jpg" -o "<<TS|dd-MM-yyyy>>.jpg" p "./user2/DCIM"
+java -jar filerename-with-dependencies.jar -i "image_<<TS|yyyy-MM-dd>>.jpg" -o "<<TS|dd-MM-yyyy>>.jpg" -p "./user1/DCIM" -r -i "<<TS|yyyy-MM-dd_HHmmss>>.jpg" -o "<<TS|dd-MM-yyyy>>.jpg" -p "./user2/DCIM"
 ----
 
-* **-i**/**-o**: Input and Output filename patterns for both tasks
-* **-p**: Specify a path for the task, relative to the directory the jar is in
-* **-r**: Include subdirectories
+* `-i`/`-o`: Input and Output filename patterns for both tasks
+* `-p`: Specify a path for the task, relative to the directory the jar is in
+* `-r`: Include subdirectories
 
 === Available Templates/Transformation Rules
 
@@ -107,6 +107,7 @@ This can be used in two ways:
 
 * Either only as part as the input pattern to match several files. Subsequently, other rules can be defined in the output pattern to modify these files:
 +
+[width=100%, frame=none, grid=rows, cols = "<.^,<.^,<.^,<.^"]
 |===
 |InputPattern |OutputPattern |Filename |Resulting Filename
 
@@ -115,6 +116,7 @@ m|`IMAGE_\<<R\|[0-9]\{3}>>.jpg` m| `picture-\<<CD\|yyyy-MM-dd>>.JPG` m|`IMAGE001
 
 * As part of both input and output pattern: This allows to shift a defined char sequence in many files following the same pattern to a different position if the output pattern.
 +
+[width=100%, frame=none, grid=rows, cols = "<.^,<.^,<.^,<.^"]
 |===
 | InputPattern | OutputPattern | Filename | Resulting Filename
 
@@ -128,6 +130,7 @@ the https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter
 
 ===== Example:
 
+[width=100%, frame=none, grid=rows, cols = "<.^,<.^,<.^,<.^"]
 |===
 | InputPattern | OutputPattern | Filename | Resulting Filename
 
@@ -144,6 +147,7 @@ NOTE: The creation date of a filename is not necessarily the date the file (e.g.
 
 ===== Example:
 
+[width=100%, frame=none, grid=rows, cols = "<.^,<.^,<.^,<.^"]
 |===
 | InputPattern | OutputPattern | Filename | Resulting Filename
 
@@ -158,10 +162,7 @@ the https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Forma
 
 ===== Example:
 
-----
-filerename -i "image.jpg" -o "image<<E|%02d>>.jpg" 
-----
-
+[width=100%, frame=none, grid=rows, cols = "<.^,<.^,<.^,<.^"]
 |===
 | InputPattern | OutputPattern | Filename | Resulting Filename
 
