@@ -2,6 +2,14 @@
 :toclevels: 3
 :toc-title: Table of Contents
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :point_right:
+:important-caption: :loudspeaker:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 = FileRename
 
 image:https://github.com/kocmana/filerename/actions/workflows/maven.yml/badge.svg[]
@@ -29,17 +37,23 @@ This project requires
 
 === Installation
 To generate an executable jar using maven simply
+
 . Clone the repository
++
 ----
 git clone git@github.com:kocmana/filerename.git
 ----
+
 . Compile and package the application
++
 ----
 mvn clean package
 ----
+
 . Navigate to the `/target` folder and execute the `filerename-with-dependencies.jar` with one or several of the arguments described in the next section, eg:
++
 ----
-java -jar filerename-with-dependencies.jar -i "image\<<TS|yyyyMMdd_HHmmss>>.jpg -o "\<<TS|yyyyMMdd_HHmmss>>" -d
+java -jar filerename-with-dependencies.jar -i "image<<TS|yyyyMMdd_HHmmss>>.jpg" -o "<<TS|yyyyMMdd_HHmmss>>" -d
 ----
 
 == How To Use
@@ -61,6 +75,28 @@ Usage: filerename [-hV] ([-p=<path>] [-r] -i=<inputTemplate>
   -V, --version       Print version information and exit.
 ----
 
+
+==== Examples
+
+===== Single Task
+----
+java -jar filerename-with-dependencies.jar -i "image_<<TS|yyyyMMdd_HHmmssSSS>>.jpg" -o "<<TS|yyyy-MM-dd_HH-mm-ss>>.jpg" -d -cp
+----
+
+* **-i**/**-o**: Input and Output filename patterns
+* **-d**: Dry run: This task will let you check if the result is what you expect it to be without performing any actual changes to the files specified
+* **-cp**: This task will create copies of the specified files using their output filenames rather than renaming them.
+
+===== Multiple Tasks
+
+----
+java -jar filerename-with-dependencies.jar -i "image_<<TS|yyyy-MM-dd>>.jpg" -o "<<TS|dd-MM-yyyy>>.jpg" p "./user1/DCIM" -r -i "<<TS|yyyy-MM-dd_HHmmss>>.jpg" -o "<<TS|dd-MM-yyyy>>.jpg" p "./user2/DCIM"
+----
+
+* **-i**/**-o**: Input and Output filename patterns for both tasks
+* **-p**: Specify a path for the task, relative to the directory the jar is in
+* **-r**: Include subdirectories
+
 === Available Templates/Transformation Rules
 
 ==== Regex Transformation Rule - `\<<R|\{regular_expression\}>>`
@@ -68,18 +104,21 @@ Usage: filerename [-hV] ([-p=<path>] [-r] -i=<inputTemplate>
 This rule allows to define a regular expression against which the filenames are matched.
 
 This can be used in two ways:
+
 * Either only as part as the input pattern to match several files. Subsequently, other rules can be defined in the output pattern to modify these files:
++
 |===
 |InputPattern |OutputPattern |Filename |Resulting Filename
 
-|`+IMAGE_<<R\|[0-9]\{3}>>.jpg+` | `+picture-<<CD\|yyyy-MM-dd>>.JPG+` |`+IMAGE001.jpg+` |`+picture-2020-10-21.JPG+`
+|`IMAGE_\<<R\|[0-9]\{3}>>.jpg` | `picture-\<<CD\|yyyy-MM-dd>>.JPG` |`IMAGE001.jpg` |`picture-2020-10-21.JPG`
 |===
 
 * As part of both input and output pattern: This allows to shift a defined char sequence in many files following the same pattern to a different position if the output pattern.
++
 |===
 | InputPattern | OutputPattern | Filename | Resulting Filename
 
-| `IMAGE_\<<R\|[0-9]\{3}>>.jpg` | `\<<R>>-picture.JPG` | `IMAGE001.jpg` | `001-picture.JPG`
+| `IMAGE_\<<R\|[0-9]\{3}>>.jpg` | `\<<R>>-picture.JPG` | `IMAGE_001.jpg` | `001-picture.JPG`
 |===
 
 ==== Timestamp Transformation Rule - `+<<TS|{timestamp_pattern>>+`
@@ -89,18 +128,10 @@ the https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter
 
 ===== Example:
 
-----
-filerename -i "img<<TS|ddMMyyyyHHmmssSSS>>.jpg" -o "image<<TS|yyyy-MM-dd_HHmmssSSS>>.jpg" 
-----
-
-The arguments specified above will cause the following behavior:
-
 |===
-|Input Filename |Output Filename 
+| InputPattern | OutputPattern | Filename | Resulting Filename
 
-|`img20122021125401451.jpg` |`image2021-12-20_125401451.jpg` 
-|`img4112202101023456.jpg` |Failure due to incorrect date information 
-|`img.jpg` |Does not match pattern and won't be treated 
+| `img\<<TS\|ddMMyyyyHHmmssSSS>>.jpg` | `image<<TS|yyyy-MM-dd_HHmmss>>.jpg` | `img20122021125401451.jpg` | `image2021-12-20_125401.jpg`
 |===
 
 ==== File Creation Date Transformation Rule - `\<<CD|\{timestamp_pattern}}>>`
@@ -113,16 +144,10 @@ NOTE: The creation date of a filename is not necessarily the date the file (e.g.
 
 ===== Example:
 
-----
-filerename -i "image.jpg" -o "image<<CD|yyyy-MM-dd_HHmmSS>>.jpg" 
-----
-
-The arguments specified above will cause the following behavior:
-
 |===
-|Input Filename |Output Filename 
+| InputPattern | OutputPattern | Filename | Resulting Filename
 
-|`image.jpg` |`image2021-12-20_125401.jpg` 
+| `file\<<R\|[0-9]\{5}>>.png` | `image_<<CD|yyyy-MM-dd_HHmmss>>.png` | `file00019.png` | `image_2021-12-20_125401.png`
 |===
 
 ==== Enumeration Transformation Rule - `\<<E|\{format_string_syntax}>>`
@@ -137,13 +162,11 @@ the https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Forma
 filerename -i "image.jpg" -o "image<<E|%02d>>.jpg" 
 ----
 
-The arguments specified above will cause the following behavior:
-
 |===
-|Input Filename |Argument |Output Filename 
+| InputPattern | OutputPattern | Filename | Resulting Filename
 
-|`image.jpg` |`%d` |`image1.jpg` 
-|`image.jpg` |`%02d` |`image01.jpg` 
+| `birthday_\<<R\|(.+)>>.png` | `image_\<<E\|%02d>>.png` | `birthday_1999-12-7-127.png` | `image_01.png`
+| `birthday_\<<R\|(.+)>>.png` | `image_\<<E>>.png` | `birthday_1999-12-7-127.png` | `image_1.png`
 |===
 
 == How to Extend the Ruleset
