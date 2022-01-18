@@ -131,7 +131,7 @@ the https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter
 |===
 | InputPattern | OutputPattern | Filename | Resulting Filename
 
-| `img\<<TS\|ddMMyyyyHHmmssSSS>>.jpg` | `image<<TS|yyyy-MM-dd_HHmmss>>.jpg` | `img20122021125401451.jpg` | `image2021-12-20_125401.jpg`
+| `img\<<TS\|ddMMyyyyHHmmssSSS>>.jpg` | `image<<TS\|yyyy-MM-dd_HHmmss>>.jpg` | `img20122021125401451.jpg` | `image2021-12-20_125401.jpg`
 |===
 
 ==== File Creation Date Transformation Rule - `\<<CD|\{timestamp_pattern}}>>`
@@ -147,7 +147,7 @@ NOTE: The creation date of a filename is not necessarily the date the file (e.g.
 |===
 | InputPattern | OutputPattern | Filename | Resulting Filename
 
-| `file\<<R\|[0-9]\{5}>>.png` | `image_<<CD|yyyy-MM-dd_HHmmss>>.png` | `file00019.png` | `image_2021-12-20_125401.png`
+| `file\<<R\|[0-9]\{5}>>.png` | `image_<<CD\|yyyy-MM-dd_HHmmss>>.png` | `file00019.png` | `image_2021-12-20_125401.png`
 |===
 
 ==== Enumeration Transformation Rule - `\<<E|\{format_string_syntax}>>`
