@@ -4,9 +4,6 @@ import at.kocmana.filerename.model.CommandLineArguments;
 import at.kocmana.filerename.model.JobArguments;
 import at.kocmana.filerename.service.transformation.TransformationRuleFactory;
 import at.kocmana.filerename.service.transformation.rules.TransformationRule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,6 +15,8 @@ import java.util.concurrent.Callable;
 import java.util.function.BiPredicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileRenameTask implements Callable<FileRenameTask.TaskStatus> {
 
@@ -110,10 +109,12 @@ public class FileRenameTask implements Callable<FileRenameTask.TaskStatus> {
   }
 
   private String fileRenameJobsToString() {
+    var action = arguments.createCopy() ? "COPY " : "MOVE ";
+
     return fileRenameJobs.stream()
-            .map(FileRenameJob::toString)
-            .map(fileRenameDescription -> arguments.createCopy() ? "COPY " : "MOVE " + fileRenameDescription)
-            .collect(Collectors.joining(LIST_LINE_BREAK));
+        .map(FileRenameJob::toString)
+        .map(fileRenameDescription -> action + fileRenameDescription)
+        .collect(Collectors.joining(LIST_LINE_BREAK));
   }
 
   private String generateResultStatistics() {
