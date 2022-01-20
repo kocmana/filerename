@@ -1,5 +1,6 @@
 package at.kocmana.filerename.service.transformation.rules;
 
+import at.kocmana.filerename.model.Region;
 import at.kocmana.filerename.model.exception.MethodNotImplementedException;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -62,15 +63,10 @@ public abstract class AbstractTransformationRule implements TransformationRule {
     return new TransformationRuleIdentity(inputRange, outputRange);
   }
 
-  private TransformationRuleIdentity.Range generateIdentityRangeFromFilenamePattern(String filenamePattern) {
+  private Region generateIdentityRangeFromFilenamePattern(String filenamePattern) {
     return ruleMatcherFor(filenamePattern)
-        .map(matcher -> new TransformationRuleIdentity.Range(matcher.start("rule"), matcher.end("rule")))
-        .orElse(new TransformationRuleIdentity.Range(0, 0));
-  }
-
-  protected IllegalStateException generateIllegalStateException(String messageTemplate, String... arguments) {
-    var message = String.format(messageTemplate, arguments);
-    return new IllegalStateException(message);
+        .map(matcher -> new Region(matcher.start("rule"), matcher.end("rule")))
+        .orElse(new Region(0, 0));
   }
 
   protected Optional<Matcher> ruleMatcherFor(String filenamePattern) {
@@ -95,7 +91,6 @@ public abstract class AbstractTransformationRule implements TransformationRule {
 
 
   private static String generateTemplateExtractionPattern(String templateShortcut) {
-    //(?<leading>.*?)(<{2}TS(\|(?<dateFormat>.+))?>{2})(?<trailing>.*?)\.(?<fileSuffix>.+)\b
     //(?<leading>.*?)(?<rule>\<{2}TS(\|(?<ruleArguments>.+))?\>{2})(?<trailing>.*?)\.(?<fileSuffix>.+)\b
     return RULE_EXTRACTION_LEADING_TEMPLATE
         + RULE_START_MARKER
