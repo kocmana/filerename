@@ -2,16 +2,17 @@ package at.kocmana.filerename.controller;
 
 import at.kocmana.filerename.model.CommandLineArguments;
 import at.kocmana.filerename.service.FileRenameTask;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Command(mixinStandardHelpOptions = true, versionProvider = VersionInformationController.class)
 public class CliController implements Runnable {
@@ -23,30 +24,41 @@ public class CliController implements Runnable {
 
   static class CliArgument {
     @Option(names = {"-p", "--path"},
-        description = "The directory for the operation")
+            description = "The directory for the operation")
     private Path path = Paths.get(".");
 
     @Option(names = {"-r", "--recursive"},
-        description = "Include sub directories.", defaultValue = "false")
+            description = "Include sub directories.", defaultValue = "false")
     private boolean recursive = false;
 
     @Option(names = {"-i", "--input"}, required = true,
-        description = "The pattern of the input file names")
+            description = "The pattern of the input file names")
     private String inputTemplate;
 
     @Option(names = {"-o", "--output"}, required = true,
-        description = "The pattern of the output file names")
+            description = "The pattern of the output file names")
     private String outputTemplate;
 
     @Option(names = {"-d", "--dryRun"},
-        description = "Setting this parameter will only display how the file names will be changed without " +
-            "performing any changes", defaultValue = "false")
+            description = "Setting this parameter will only display how the file names will be changed without " +
+                    "performing any changes", defaultValue = "false")
     private boolean dryRun = false;
 
     @Option(names = {"-cp", "--copy"},
-        description = "Define the operation to be performed. If set, files will be copied instead of renamed.",
-        defaultValue = "false")
+            description = "Define the operation to be performed. If set, files will be copied instead of renamed.",
+            defaultValue = "false")
     private boolean createCopy = false;
+
+    @Option(names = {"-cr", "--collisionResolution"},
+            description = "Defines the action to be performed if a file name already exists. "
+                    + "Options are FAIL to fail the specific job, "
+                    + "or ENUMERATE to append a incrementing number to the file name (e.g. \"image-01.jpg\".",
+            defaultValue = "FAIL")
+    private CollisionResolutionStrategy collisionResolutionStrategy = CollisionResolutionStrategy.FAIL;
+  }
+
+  public enum CollisionResolutionStrategy {
+    FAIL, ENUMERATE
   }
 
   @Override
@@ -54,9 +66,9 @@ public class CliController implements Runnable {
     var arguments = mapArguments();
     try {
       var completableFutures = arguments.stream()
-          .map(FileRenameTask::new)
-          .map(task -> CompletableFuture.supplyAsync(task::call))
-          .toList();
+              .map(FileRenameTask::new)
+              .map(task -> CompletableFuture.supplyAsync(task::call))
+              .toList();
 
       var allTasksFutures = CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]));
 
@@ -70,9 +82,9 @@ public class CliController implements Runnable {
 
   List<CommandLineArguments> mapArguments() {
     return cliArguments.stream()
-        .map(args -> new CommandLineArguments(args.path, args.recursive, args.inputTemplate, args.outputTemplate,
-            args.dryRun, args.createCopy))
-        .toList();
+            .map(args -> new CommandLineArguments(args.path, args.recursive, args.inputTemplate, args.outputTemplate,
+                    args.dryRun, args.createCopy, args.collisionResolutionStrategy))
+            .toList();
   }
 
   public void run(String[] args) {
